@@ -1,0 +1,34 @@
+{
+    "manifest_version": 3,
+    "name": "Quick Review",
+    "version": "1.0",
+    "description": "A Chrome extension built with Vite and React",
+    "action": {
+        "default_popup": "index.html",
+        "default_icon": {
+            "16": "icon.png",
+            "48": "icon.png",
+            "128": "icon.png"
+        }
+    },
+    "background": {
+        "service_worker": "src/background.js"
+    },
+    "permissions": [],
+    "host_permissions": [],
+    "icons": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "src/content.jsx"
+            ]
+        }
+    ]
+}
