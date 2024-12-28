@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     webExtension({
       manifest: "./src/manifest.json",
-      additionalInputs: ["src/content.jsx"],
+      additionalInputs: ["src/content/content.jsx"],
     }),
   ],
 });
