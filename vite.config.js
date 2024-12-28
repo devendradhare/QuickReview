@@ -13,6 +13,7 @@ export default defineConfig({
     webExtension({
       manifest: "./src/manifest.json",
       additionalInputs: ["src/content/content.jsx"],
+      hotReload: true,
     }),
   ],
 });
