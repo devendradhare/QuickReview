@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { useMyContext } from "../ContextProvider";
+import { useMyContext } from "../contextAPI/ContextProvider";
 // svgs
 import closeIcon from "../images/close.svg";
 import minIcon from "../images/minimize.svg";
