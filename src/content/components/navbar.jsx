@@ -1,88 +1,39 @@
-import React, { useEffect, useRef } from "react";
-import { useMyContext } from "../contextAPI/ContextProvider";
-// svgs
-import closeIcon from "../images/close.svg";
-import minIcon from "../images/minimize.svg";
-import reloadIcon from "../images/reload.svg";
+import "react";
+import styles from "../content.module.css";
+import default_avatar from "../images/default_avatar.svg";
+import { _useContext } from "../contextAPI/ContextProvider.jsx";
 
-const Navbar = () => {
-  const { position, setPosition, reloadExtension } = useMyContext();
-  // References to handlers for removal
-  const mouseMoveHandler = React.useRef(null);
-  const mouseUpHandler = React.useRef(null);
-
-  function handleMouseDown(mouseDownEvent) {
-    mouseDownEvent.preventDefault();
-    // Define handlers here to bind them to the `ref`
-    mouseMoveHandler.current = (e) => {
-      const prevX = position.x;
-      const prevY = position.y;
-      setPosition((prev) => ({
-        x: prevX + mouseDownEvent.clientX - e.clientX,
-        y: prevY + mouseDownEvent.clientY - e.clientY,
-      }));
-    };
-
-    mouseUpHandler.current = () => {
-      document.removeEventListener("mousemove", mouseMoveHandler.current);
-      document.removeEventListener("mouseup", mouseUpHandler.current);
-    };
-
-    // Add event listeners
-    document.addEventListener("mousemove", mouseMoveHandler.current);
-    document.addEventListener("mouseup", mouseUpHandler.current);
-  }
-
-  useEffect(() => {
-    // Cleanup event listeners on component unmount
-    return () => {
-      document.removeEventListener("mousemove", mouseMoveHandler.current);
-      document.removeEventListener("mouseup", mouseUpHandler.current);
-    };
-  }, []);
+const NavBar = () => {
+  const { user, _setRoute } = _useContext();
   return (
     <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-      }}
+      // className={styles.border}
+      style={{ display: "flex", justifyContent: "space-around" }}
     >
-      <h1 style={{ color: "white", fontSize: "12px", padding: "0 12px" }}>
-        QuikReview
-      </h1>
-      <div style={{ cursor: "move" }} onMouseDown={handleMouseDown}>
-        ...
+      <div
+        onClick={() => _setRoute("Home")}
+        style={{ border: "1px solid gray" }}
+      >
+        home
       </div>
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "4px",
-          padding: "0 4px",
-        }}
+        onClick={() => _setRoute("Notes")}
+        style={{ border: "1px solid gray" }}
       >
-        <div>
-          <img
-            style={{ width: "16px", cursor: "pointer" }}
-            src={reloadIcon}
-            alt="reload icon"
-            onClick={reloadExtension}
-          />
-        </div>
-        <div>
-          <img
-            style={{ width: "16px", cursor: "pointer" }}
-            src={minIcon}
-            alt="minimize icon"
-          />
-        </div>
-        {/* <div style={{ width: "16px" }}>
-          <img src={closeIcon} alt="close icon" />
-        </div> */}
+        notes
+      </div>
+      <div onClick={() => _setRoute("Profile")} className={styles.border}>
+        <img
+          src={user?.photoURL || default_avatar}
+          alt="user profile"
+          style={{
+            width: "32px",
+            border: "1px solid rgba(255,255,255,0.3)",
+          }}
+        />
       </div>
     </div>
   );
 };
 
-export default Navbar;
+export default NavBar;

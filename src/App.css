@@ -3,43 +3,126 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-}
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
+  --button-gradient: linear-gradient(to top,
+      #d8d9db 0%,
+      #fff 80%,
+      #fdfdfd 100%);
+  --button-border: #8f9092;
+  --button-text: #606060;
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
+  --highlight-bottom: 0 4px 3px 1px #fcfcfc;
+  --shadow-bottom: 0 6px 8px #d6d7d9;
+  --shadow-top: 0 -4px 4px #cecfd1;
+  --highlight-top: 0 -6px 4px #fefefe;
+  --shadow-inset: inset 0 0 3px 0 #cecfd1;
+  --shadow-inset-hover: inset 0 0 3px 3px #cecfd1;
+  --shadow-inset-focus: inset 0 0 10px 0px rgba(0, 0, 250, 0.6);
+  --shadow-inset-active: inset 0 0 5px 3px #999, inset 0 0 30px #aaa;
 
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+  --button-shadow-base: var(--highlight-bottom), var(--shadow-bottom),
+                        var(--shadow-top), var(--highlight-top);
+  --button-shadow-default: var(--button-shadow-base), var(--shadow-inset);
+  --button-shadow-hover: var(--button-shadow-base),
+                         var(--shadow-inset-hover);
+  --button-shadow-focus: var(--button-shadow-base),
+                         var(--shadow-inset-focus);
+  --button-shadow-active: var(--button-shadow-base),
+                          var(--shadow-inset-active);
 }
 
 .card {
   padding: 2em;
 }
 
-.read-the-docs {
-  color: #888;
+.inputBox {
+  margin: 20px 0;
+  padding: .5rem;
+  border-radius: .5rem;
+  outline: none;
+  box-shadow: 2px 2px 3px rgba(250, 250, 250, 0.9);
+}
+
+/* css for buttons - starts from here */
+@keyframes active {
+  from {
+    box-shadow: var(--button-shadow-focus);
+  }
+
+  to {
+    box-shadow: var(--button-shadow-hover);
+  }
+}
+
+#inputDiv>*,
+#inputDiv>*:before,
+#inputDiv>*:after {
+  box-sizing: border-box;
+  background: none;
+}
+
+#inputDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+button,
+[role="button"] {
+  appearance: none;
+  -webkit-appearance: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  cursor: pointer;
+  width: 150px;
+  height: 50px;
+  background-image: var(--button-gradient);
+  border-radius: 30px;
+  border: 1px solid var(--button-border);
+  box-shadow: var(--button-shadow-default);
+  transition: all 0.2s ease;
+  font-family: "Source Sans Pro", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--button-text);
+  text-shadow: 0 1px #fff;
+}
+
+button::-moz-focus-inner,
+[role="button"]::-moz-focus-inner {
+  border: 0;
+}
+
+button>*,
+[role="button"]>* {
+  transition: transform 0.2s ease;
+}
+
+button:hover:not([disabled]),
+[role="button"]:hover:not([disabled]) {
+  box-shadow: var(--button-shadow-hover);
+}
+
+button:hover:not([disabled])>*,
+[role="button"]:hover:not([disabled])>* {
+  transform: scale(0.975);
+}
+
+button:focus:not(:active),
+[role="button"]:focus:not(:active) {
+  animation: active 0.9s alternate infinite;
+  outline: none;
+}
+
+button:active:not([disabled]),
+[role="button"]:active:not([disabled]) {
+  box-shadow: var(--button-shadow-active);
+}
+
+button:active:not([disabled])>*,
+[role="button"]:active:not([disabled])>* {
+  transform: scale(0.95);
 }

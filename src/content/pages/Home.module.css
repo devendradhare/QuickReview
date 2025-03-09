@@ -1,0 +1,10 @@
+.options {
+    background: #000000;
+    cursor: pointer;
+    margin: 1rem 0;
+    padding: 4px;
+}
+
+.options:hover {
+    background: #181818b7;
+}
