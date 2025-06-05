@@ -5,10 +5,10 @@ import ContentApp from "./contentApp.jsx";
 
 const root = document.createElement("div");
 root.id = "__devendra_dhare";
-document.body.append(root);
+  document.body.append(root);
 
-createRoot(root).render(
-  <StrictMode>
+  createRoot(root).render(
+    <StrictMode>
     <ContextProvider>
       <ContentApp />
     </ContextProvider>

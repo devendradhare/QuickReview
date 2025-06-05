@@ -1,22 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { auth, firestore } from "../firebase/firebase.js";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-  onAuthStateChanged,
-  signOut,
-} from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
   doc,
   addDoc,
+  getDoc,
   getDocs,
   setDoc,
   collection,
   query,
-  where,
   updateDoc,
+  increment,
   arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
 
 const Context = createContext();
@@ -27,21 +23,26 @@ export const _useContext = () => {
 
 // eslint-disable-next-line react/prop-types
 const ContextProvider = ({ children }) => {
+  // position of the floating window on the screen
   const [position, setPosition] = useState(
     JSON.parse(localStorage.getItem("quickReview_Position")) || { x: 15, y: 15 }
   );
   const [user, setUser] = React.useState(null);
-  const [_route, _setRoute] = useState("Home");
+  const [_route, _setRoute] = useState("QuestionsPage");
   const [isMinimize, setIsMinimize] = useState(false);
+  // info about current playing video
   const [currentVideo, setCurrentVideo] = useState(null);
   const [videoId, setVideoId] = useState(null);
   const [videoTitle, setVideoTitle] = useState(null);
-  const [quiz, setQuiz] = useState([]);
+  // questions array of the current playing video
+  const [videoQueArray, setVideoQueArray] = useState([]);
+  const [videoQueArrayLoading, setVideoQueArrayLoading] = useState(false);
 
   function getVideoDetails(prev) {
     const url = new URL(location.href);
     if (url.hostname !== "www.youtube.com") return prev;
     const searchParams = Object.fromEntries(url.searchParams);
+
     if (searchParams.v) {
       // Get the video title from the <title> tag
       let videoTitle = document.title;
@@ -69,26 +70,26 @@ const ContextProvider = ({ children }) => {
     return () => {
       observer.disconnect();
     };
-  }, []); // Empty dependency array ensures this only runs once when the component mounts
+  }, []);
 
   // Persist user authentication state across refreshes
-  // useEffect(() => {
-  //   const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-  //     if (currentUser) {
-  //       console.log("User is signed in: ", currentUser);
-  //       setUser(currentUser); // Restore user in state
-  //       if (_route == "Login" || _route == "Signup") {
-  //         _setRoute("Home");
-  //       }
-  //     } else {
-  //       console.log("No user is signed in.");
-  //       setUser(null); // Clear user state
-  //     }
-  //   });
-  //
-  //   // Cleanup the listener on unmount
-  //   return () => unsubscribe();
-  // }, []);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        console.log("User is signed in: ", currentUser);
+        setUser(currentUser); // Restore user in state
+        if (_route == "Login" || _route == "Signup") {
+          _setRoute("QuestionsPage");
+        }
+      } else {
+        console.log("No user is signed in.");
+        setUser(null); // Clear user state
+      }
+    });
+
+    // Cleanup the listener on unmount
+    return () => unsubscribe();
+  }, []);
 
   // setting the window position in localStorage
   useEffect(() => {
@@ -96,104 +97,32 @@ const ContextProvider = ({ children }) => {
   }, [position]);
 
   // _del => delete this useEffect
-  useEffect(() => {
-    console.log("userContext- user: ", user);
-  }, [user, setUser]);
+  // useEffect(() => {
+  //   console.log("userContext- user: ", user);
+  // }, [user, setUser]);
 
   // fetch the questions for specific video id
   useEffect(() => {
+    console.log("videoQueArray state changed: ", videoQueArray);
+  }, [videoQueArray]);
+
+  useEffect(() => {
     const getQuestions = async () => {
       if (videoId) {
+        setVideoQueArrayLoading(true);
         const result = await fetchQuestions(videoId);
-        console.log("result: 🥲", result);
-        setQuiz(result);
+        setVideoQueArrayLoading(false);
       }
     };
     getQuestions();
   }, [videoId]);
-
-  async function isUsernameUnique(username) {
-    try {
-      const usersCollection = collection(firestore, "user"); // Replace "user" with your collection name
-      const userQuery = query(
-        usersCollection,
-        where("username", "==", username)
-      );
-      const querySnapshot = await getDocs(userQuery);
-      // Check if the querySnapshot is empty
-      if (!querySnapshot.empty) {
-        // Username exists in the collection, so it's not unique
-        return false;
-      }
-      // Username is unique
-      return true;
-    } catch (error) {
-      console.error("Error checking username uniqueness:", error);
-      throw error;
-    }
-    // const usernameDocRef = doc(firestore, "user", username);
-    // const usernameDoc = await getDoc(usernameDocRef);
-    // console.log("usernameDoc: ", usernameDoc);
-    // return !usernameDoc.exists(); // Returns true if username is unique
-  }
-
-  async function login(formData) {
-    try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-      console.log("User logged in successfully : ", userCredential.user);
-      setUser(userCredential.user);
-    } catch (error) {
-      console.error("error: ", error, "message", error.message);
-    }
-  }
-
-  async function signin(formData) {
-    try {
-      const isUnique = await isUsernameUnique(formData.username);
-      if (!isUnique) {
-        console.error("Username is already taken.");
-        return;
-      }
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-      console.log("New user created: ", userCredential.user);
-      const newUser = userCredential.user;
-
-      let photoURL = `https://avatar.iran.liara.run/username?username=${formData.username}`;
-      // Update user profile with displayName and photoURL
-      await updateProfile(newUser, {
-        displayName: formData.username,
-        photoURL,
-      });
-
-      // Save the username to Firestore
-      await setDoc(doc(firestore, "user", newUser.uid), {
-        uid: newUser.uid,
-        username: formData.username,
-        photoURL,
-      });
-      setUser(userCredential.user);
-    } catch (signupError) {
-      console.error("Error during signup: ", signupError);
-    }
-  }
-
-  async function logout() {
-    await signOut(auth);
-  }
 
   function isAuthenticated() {
     return user ? true : false;
   }
 
   function reloadExtension() {
+    console.log("Reloading extension...");
     chrome.runtime.sendMessage({ action: "reloadExtension" });
   }
 
@@ -201,26 +130,90 @@ const ContextProvider = ({ children }) => {
     console.log("contributeQuestion clicked", que);
     try {
       await setDoc(
-        doc(firestore, "quizzes", currentVideo.v),
-        { videoTitle: currentVideo.title },
+        doc(firestore, "quizzes", videoId),
+        { videoTitle: videoTitle },
         { merge: true }
       );
 
       const questionsCollectionRef = collection(
         firestore,
         "quizzes",
-        currentVideo.v,
+        videoId,
         "questions"
       );
+      const newOptions = que.options.map((option) => {
+        return { option: option, clicks: 0 };
+      });
+      console.log("newOptions: ", newOptions);
       const questionData = {
-        queText: que.queText,
-        options: [...que.options], // this is an array of 4 strings
-        correctOption: que.correctOption,
+        type: que.type,
+        que: que.que,
+        options: newOptions,
+        correctAnswer: que.correctOption,
+        totalAttempts: 0,
         addedBy: user.uid,
-        likes: 0, // initial like count
+        likes: [],
+        reports: 0,
+        addedAt: new Date(),
       };
       const newQuestionRef = await addDoc(questionsCollectionRef, questionData);
       console.log("Question added successfully with ID:", newQuestionRef.id);
+
+      // Adding reference to user's "myQuestions" collection
+      const userQuestionRef = doc(
+        firestore,
+        "user",
+        user.uid,
+        "myQuestions",
+        newQuestionRef.id
+      );
+
+      await setDoc(userQuestionRef, {
+        questionId: newQuestionRef.id,
+        videoId: videoId,
+        addedAt: new Date(),
+      });
+    } catch (error) {
+      console.error("Error adding question:", error);
+    }
+  }
+
+  async function handleJsonQuestionsSubmit(que) {
+    console.log("handleJsonQuestionsSubmit clicked", que);
+    try {
+      await setDoc(
+        doc(firestore, "quizzes", videoId),
+        { videoTitle: videoTitle },
+        { merge: true }
+      );
+
+      const questionsCollectionRef = collection(
+        firestore,
+        "quizzes",
+        videoId,
+        "questions"
+      );
+      const questionData = {
+        ...que,
+        addedBy: user.uid,
+      };
+      const newQuestionRef = await addDoc(questionsCollectionRef, questionData);
+      console.log("Question added successfully with ID:", newQuestionRef.id);
+
+      // Adding reference to user's "myQuestions" collection
+      const userQuestionRef = doc(
+        firestore,
+        "user",
+        user.uid,
+        "myQuestions",
+        newQuestionRef.id
+      );
+
+      await setDoc(userQuestionRef, {
+        questionId: newQuestionRef.id,
+        videoId: videoId,
+        addedAt: new Date(),
+      });
     } catch (error) {
       console.error("Error adding question:", error);
     }
@@ -229,8 +222,6 @@ const ContextProvider = ({ children }) => {
   async function fetchQuestions(videoId) {
     try {
       console.log("inside fetchQuestions try ------ 1");
-      console.log("inside fetchQuestions try ------ 2");
-
       // Reference to the questions subcollection for the given videoId
       const questionsCollectionRef = collection(
         firestore,
@@ -241,19 +232,92 @@ const ContextProvider = ({ children }) => {
 
       // Fetch all documents in the questions subcollection
       const querySnapshot = await getDocs(questionsCollectionRef);
-      console.log("inside fetchQuestions try ------ 3", querySnapshot);
+      console.log("querySnapshot: ", querySnapshot);
 
       // Map the querySnapshot to get an array of questions
       const questions = querySnapshot.docs.map((doc) => ({
         id: doc.id, // Add the document ID for reference
         ...doc.data(), // Spread the document's data
       }));
-      console.log("inside fetchQuestions try ------ 4");
-      console.log("Fetched questions:", questions);
+      setVideoQueArray(questions);
       return questions; // Return the array of questions
     } catch (error) {
       console.error("Error fetching questions:", error);
       return [];
+    }
+  }
+
+  // Add this function inside your ContextProvider component
+
+  async function incrementOptionClick(questionId, optionIndex) {
+    try {
+      const questionRef = doc(
+        firestore,
+        "quizzes",
+        videoId,
+        "questions",
+        questionId
+      );
+      const questionSnap = await getDoc(questionRef);
+      if (!questionSnap.exists()) {
+        throw new Error("Question not found");
+      }
+      const questionData = questionSnap.data();
+      const options = questionData.options || [];
+
+      if (optionIndex < 0 || optionIndex >= options.length) {
+        throw new Error("Invalid option index");
+      }
+
+      // Increment the clicks for the selected option
+      options[optionIndex] = {
+        ...options[optionIndex],
+        clicks: (options[optionIndex].clicks || 0) + 1,
+      };
+      // also increment the totalAttempts for the question
+      await updateDoc(questionRef, {
+        options,
+        totalAttempts: increment(1), // Increment the total attempts by 1
+      });
+
+      await updateDoc(questionRef, { options });
+      console.log("Option click incremented successfully");
+      return true;
+    } catch (error) {
+      console.error("Error incrementing option click:", error);
+      return false;
+    }
+  }
+
+  async function likeQuestion(videoId, question) {
+    const questionRef = doc(
+      firestore,
+      "quizzes",
+      videoId,
+      "questions",
+      question.id
+    );
+
+    try {
+      const snapshot = await getDoc(questionRef);
+      const currentLikedBy = snapshot.data().likedBy || [];
+      console.log("currentLikedBy: ", currentLikedBy);
+
+      if (currentLikedBy.includes(user.uid)) {
+        await updateDoc(questionRef, {
+          likedBy: arrayRemove(user.uid),
+        });
+        console.log("Unliked the question");
+        return currentLikedBy.length - 1;
+      } else {
+        await updateDoc(questionRef, {
+          likedBy: arrayUnion(user.uid),
+        });
+        console.log("Liked the question");
+        return currentLikedBy.length + 1;
+      }
+    } catch (error) {
+      console.error("Error updating like status:", error);
     }
   }
 
@@ -270,14 +334,18 @@ const ContextProvider = ({ children }) => {
         isMinimize,
         setIsMinimize,
         currentVideo,
-        quiz,
+        videoQueArray,
+        setVideoQueArray,
+        videoQueArrayLoading,
+        videoId,
+        videoTitle,
         // functions
         contributeQuestion,
+        handleJsonQuestionsSubmit,
         reloadExtension,
         isAuthenticated,
-        login,
-        signin,
-        logout,
+        likeQuestion,
+        incrementOptionClick,
         fetchQuestions,
       }}
     >

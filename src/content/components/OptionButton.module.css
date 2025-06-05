@@ -1,0 +1,22 @@
+.button {
+    background: rgba(45, 45, 45, 0);
+    color: rgba(255, 255, 255, 0.8);
+    transition-duration: 100ms;
+}
+
+/* .button:hover {
+    scale: 1.1;
+    transition-duration: 100ms;
+} */
+
+.greenButton {
+    background: green;
+}
+
+.redButton {
+    background: red;
+}
+
+.blueButton {
+    background: blue;
+}

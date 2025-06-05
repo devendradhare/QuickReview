@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
+import styles from "./content.module.css";
 // context
 import { _useContext } from "./contextAPI/ContextProvider";
 // components
-import styles from "./content.module.css";
 import MenuBar from "./components/MenuBar";
-import NavBar from "./components/NavBar";
 // pages
 import PageRouteManager from "./pages/PageRouteManager";
 
 const ContentApp = () => {
-  console.log("rerendered 🌻");
-
-  const { position, isMinimize, setIsMinimize } = _useContext();
+  const { position, isMinimize, setIsMinimize, _route, _setRoute } =
+    _useContext();
   const [videoId, setVideoId] = useState(printVideoId());
 
   function printVideoId() {
@@ -28,61 +26,48 @@ const ContentApp = () => {
     const handleUrlChange = () => {
       setVideoId(printVideoId());
     };
-    // Create a MutationObserver to watch for changes in the document
     const observer = new MutationObserver(() => {
       handleUrlChange();
     });
-    // Watch for changes in the history state, which can reflect a URL change
     observer.observe(document, { childList: true, subtree: true });
-    // Run once when component mounts
     handleUrlChange();
-    // Cleanup the observer on component unmount
     return () => {
       observer.disconnect();
     };
-  }, []); // Empty dependency array ensures this only runs once when the component mounts
+  }, []);
 
   if (isMinimize) {
     return (
       <div
         className={styles.container}
         style={{
-          // border: "1px solid white",
           width: "50px",
           height: "50px",
           borderRadius: "50%",
-          cursor: "pointer"
+          cursor: "pointer",
+          bottom: "15px",
+          right: "15px",
+          backgroundColor: "rgba(45, 45, 45, 1)",
+          fontSize: "1.5rem",
+          fontFamily: "Arial, Helvetica, sans-serif",
         }}
         onClick={() => setIsMinimize(false)}
       >
-        min window
+        Quick Review (Beta)
       </div>
     );
   }
+
   return (
-    <div
-      className={styles.container}
-      style={{ right: position.x, bottom: position.y }}
-    >
+    <div className={styles.container}>
       <MenuBar />
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          flexGrow: "1",
+          flexGrow: 1,
+          overflow: "visible",
         }}
       >
-        <div
-          style={{
-            borderTop: "1px solid rgba(100, 100, 100, 0.3)",
-            flexGrow: "1",
-            height: "100px",
-          }}
-        >
-          <PageRouteManager />
-          {/* <div className={styles.videoInfo}>VideoId: {videoId}</div> */}
-        </div>
-        <NavBar />
+        <PageRouteManager />
       </div>
     </div>
   );

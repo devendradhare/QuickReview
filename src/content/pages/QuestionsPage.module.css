@@ -6,5 +6,7 @@
 }
 
 .options:hover {
-    background: #181818b7;
+    /* background: #181818b7; */
+    transform: scale(1.1);
+    transition-duration: 0.5s;
 }

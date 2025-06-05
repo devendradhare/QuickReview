@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from "react";
 import { _useContext } from "../contextAPI/ContextProvider";
 // svgs
-import closeIcon from "../images/close.svg";
-import minIcon from "../images/minimize.svg";
-import reloadIcon from "../images/reload.svg";
+import closeIcon from "../assets/icons/close.svg";
+import minIcon from "../assets/icons/minimize.svg";
+import reloadIcon from "../assets/icons/reload.svg";
+import homeIcon from "../assets/icons/home.svg";
+import avatarIcon from "../assets/default_avatar.svg";
 
 const MenuBar = () => {
-  const { position, setPosition, reloadExtension, setIsMinimize } =
+  const { position, setPosition, reloadExtension, setIsMinimize, _setRoute } =
     _useContext();
   // References to handlers for removal
   const mouseMoveHandler = React.useRef(null);
@@ -15,6 +17,11 @@ const MenuBar = () => {
   const handleMinimize = () => {
     console.log("Minimize clicked");
     setIsMinimize(true);
+  };
+
+  const handleHomeClick = () => {
+    console.log("home button clicked");
+    _setRoute("QuestionsPage");
   };
 
   function handleMouseDown(mouseDownEvent) {
@@ -53,13 +60,14 @@ const MenuBar = () => {
       style={{
         display: "flex",
         justifyContent: "space-between",
+        paddingTop: "0.5rem",
       }}
     >
-      <h1 style={{ color: "white", fontSize: "12px", padding: "0 12px" }}>
-        QuikReview
+      <h1 style={{ fontSize: "12px", padding: "0 5px" }}>
+        QuickReview (Beta)
       </h1>
       <div style={{ cursor: "move" }} onMouseDown={handleMouseDown}>
-        ...
+        
       </div>
       <div
         style={{
@@ -70,14 +78,34 @@ const MenuBar = () => {
           padding: "0 4px",
         }}
       >
+        {/* profile button */}
         <div>
+          <img
+            style={{ width: "16px", cursor: "pointer", strockColor: "white" }}
+            src={avatarIcon}
+            alt="reload icon"
+            onClick={() => _setRoute("Profile")}
+          />
+        </div>
+        {/* home button */}
+        <div>
+          <img
+            style={{ width: "16px", cursor: "pointer", strockColor: "white" }}
+            src={homeIcon}
+            alt="reload icon"
+            onClick={handleHomeClick}
+          />
+        </div>
+        {/* reload button */}
+        {/* <div>
           <img
             style={{ width: "16px", cursor: "pointer" }}
             src={reloadIcon}
             alt="reload icon"
             onClick={reloadExtension}
           />
-        </div>
+        </div> */}
+        {/* minimize button */}
         <div>
           <img
             style={{ width: "16px", cursor: "pointer" }}

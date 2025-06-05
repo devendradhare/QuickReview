@@ -1,47 +1,44 @@
-import React from "react";
-import { auth, firestore } from "../firebase/firebase.js";
-import {
-  doc,
-  getDocs,
-  setDoc,
-  collection,
-  query,
-  where,
-} from "firebase/firestore";
+import React, { useState, useRef } from "react";
 import { _useContext } from "../contextAPI/ContextProvider";
-const ContributeQue = () => {
-  const { contributeQuestion, _setRoute, user, currentVideo } = _useContext();
-  const [question, setQuestion] = React.useState("");
-  const [options, setOptions] = React.useState(["", ""]); // Start with two empty options
-  const [correctAnswer, setCorrectAnswer] = React.useState(null);
-  const [questions, setQuestions] = React.useState([
-    {
-      question:
-        "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nam doloremque, eaque aut quaerat tempora sed? Dolore totam unde, fugiat odio atque qui facilis nam? Molestiae necessitatibus obcaecati aut possimus labore.",
-      options: ["klasdh", "alsdkjf", "alsdkjfa", "aasfldj"],
-      correctAnswer: 3,
-      addedBy: user.uid,
-      // videoId:
-    },
-  ]); // Stores all created questions
+import Button00 from "../components/buttons/Button00";
+import trash from "../assets/icons/trash.svg";
+import arrowLeft from "../assets/icons/arrow-left-short.svg";
+import closeSvg from "../assets/icons/close.svg";
 
-  // Handle adding a new option field
+const ContributeQue = () => {
+  const { contributeQuestion, _setRoute, user } = _useContext();
+  const [question, setQuestion] = useState("");
+  const [syntax, setSyntax] = useState(null);
+  const [options, setOptions] = useState(["", "", "", ""]);
+  const [correctAnswer, setCorrectAnswer] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const optionRefs = useRef([]);
+
   const addOption = () => {
     if (options.length < 4) setOptions([...options, ""]);
   };
 
-  // Handle updating an option's text
   const updateOption = (index, value) => {
     const updatedOptions = options.map((opt, idx) =>
       idx === index ? value : opt
     );
     setOptions(updatedOptions);
   };
-  const goBack = () => {
-    _setRoute("Home");
+
+  const removeOption = (index) => {
+    const updatedOptions = options.filter((_, idx) => idx !== index);
+    setOptions(updatedOptions);
+    if (correctAnswer === index) {
+      setCorrectAnswer(null); // Reset correct answer if it was the removed option
+    } else if (correctAnswer > index) {
+      setCorrectAnswer(correctAnswer - 1); // Adjust correct answer index if needed
+    }
   };
 
-  // Handle saving the question
+  const goBack = () => {
+    _setRoute("QuestionsPage");
+  };
+
   const saveQuestion = async () => {
     if (
       !question.trim() ||
@@ -53,7 +50,9 @@ const ContributeQue = () => {
     }
 
     const newQuestion = {
-      queText: question,
+      type: "multiple-options",
+      que: question,
+      syntax: syntax,
       options,
       correctOption: correctAnswer,
     };
@@ -61,103 +60,206 @@ const ContributeQue = () => {
 
     setQuestions([...questions, newQuestion]);
     setQuestion("");
-    setOptions(["", ""]);
+    setOptions(["", "", "", ""]);
     setCorrectAnswer(null);
+    setSyntax((prev) => (prev == null ? null : ""));
+  };
+
+  const autoResize = (textarea) => {
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
   return (
-    <>
+    <div style={{ height: "100%" }}>
       <div
         style={{
-          maxWidth: "500px",
-          margin: "0 auto",
-          padding: "20px",
-          fontFamily: "Arial",
-          height: "100%",
-          overflowX: "scroll",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <button onClick={() => goBack()}>back</button>
-        <h2>Create a Multiple Choice Question</h2>
-        <div style={{ marginBottom: "15px" }}>
-          <label>
-            Question:
-            <textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Enter your question here"
-              style={{ width: "100%", height: "50px", marginTop: "5px" }}
-            />
-          </label>
+        <div style={{ display: "flex", gap: "0.5rem" }} onClick={goBack}>
+          <img src={arrowLeft} alt="back" />
+          <span>back</span>
+        </div>
+        <div
+          style={{
+            color: "lightblue",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            _setRoute("PromptPage");
+          }}
+        >
+          Use AI
+        </div>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          // display: syntax == null ? "none" : "block",
+          position: "relative",
+          display: "none",
+        }}
+      >
+        {/* code textarea */}
+        <textarea
+          value={syntax}
+          onChange={(e) => setSyntax(e.target.value)}
+          placeholder="Enter your code here (optional)"
+          maxLength={500}
+          style={{
+            width: "100%",
+            maxWidth: "100%",
+            height: "100%",
+            padding: "0.8rem",
+            borderRadius: "12px",
+            fontSize: "1.5rem",
+            backgroundColor: "rgb(45,45,45)",
+            color: "white",
+            outline: "none",
+            resize: "none",
+          }}
+        />
+        <span
+          style={{
+            position: "absolute",
+            bottom: "8px",
+            right: "12px",
+            fontSize: "0.9rem",
+            color: "#aaa",
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
+          {500 - (syntax ? syntax.length : 0)} / 500
+        </span>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
+      >
+        <div style={{ flexGrow: 1, position: "relative" }}>
+          {/* qustion textarea */}
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Enter your question here"
+            maxLength={400}
+            style={{
+              width: "100%",
+              maxWidth: "100%",
+              height: "100%",
+              maxHeight: "100%",
+              padding: "0.8rem",
+              border: "1px solid rgb(100 100 100 / 50%)",
+              borderRadius: "12px",
+              fontSize: "1.5rem",
+              backgroundColor: "rgb(45,45,45)",
+              color: "white",
+              outline: "none",
+              resize: "none",
+            }}
+          />
+          <span
+            style={{
+              position: "absolute",
+              bottom: "8px",
+              right: "12px",
+              fontSize: "0.9rem",
+              color: "#aaa",
+              pointerEvents: "none",
+              userSelect: "none",
+            }}
+          >
+            {400 - (question ? question.length : 0)} / 400
+          </span>
         </div>
 
+        {/* option inputs */}
         <div>
-          <h3>Options:</h3>
           {options.map((opt, index) => (
-            <div key={index} style={{ marginBottom: "10px" }}>
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginTop: "10px",
+                marginBottom: "10px",
+                gap: "10px",
+                position: "relative",
+              }}
+            >
               <input
-                type="text"
-                value={opt}
-                onChange={(e) => updateOption(index, e.target.value)}
-                placeholder={`Option ${index + 1}`}
-                style={{ width: "70%" }}
-              />
-              <input
-                type="radio"
+                type="checkbox"
                 name="correctOption"
                 checked={correctAnswer === index}
                 onChange={() => setCorrectAnswer(index)}
-                style={{ marginLeft: "10px" }}
+                style={{ cursor: "pointer" }}
               />
-              Correct
+              <textarea
+                value={opt}
+                onChange={(e) => updateOption(index, e.target.value)}
+                placeholder={`Option ${index + 1}`}
+                maxLength={100}
+                rows={1}
+                ref={(el) => (optionRefs.current[index] = el)}
+                style={{
+                  flex: "1",
+                  padding: "10px",
+                  border: "none",
+                  borderRadius: "12px",
+                  fontSize: "1.5rem",
+                  backgroundColor: "#202020",
+                  color: "white",
+                  outline: "none",
+                  resize: "none",
+                  overflow: "hidden",
+                }}
+                onInput={(e) => autoResize(e.target)}
+              />
+              <span
+                style={{
+                  position: "absolute",
+                  bottom: "2px",
+                  right: "2px",
+                  fontSize: "0.9rem",
+                  color: "#aaa",
+                  pointerEvents: "none",
+                  userSelect: "none",
+                }}
+              >
+                {100 - (opt ? opt.length : 0)} / 100
+              </span>
             </div>
           ))}
-          <button onClick={addOption} style={{ marginTop: "10px" }}>
-            Add Option
+        </div>
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <button
+            onClick={saveQuestion}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#28a745",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              fontSize: "1rem",
+              display: "block",
+              width: "100%",
+            }}
+          >
+            Save Question
           </button>
         </div>
-
-        <button
-          onClick={saveQuestion}
-          style={{ marginTop: "20px", display: "block" }}
-        >
-          Save Question
-        </button>
-
-        {questions.length > 0 && (
-          <div style={{ marginTop: "30px" }}>
-            <h3>Saved Questions:</h3>
-            {questions.map((q, index) => (
-              <div key={index} style={{ marginBottom: "20px" }}>
-                <div>
-                  <img
-                    src={user?.photoURL}
-                    alt="user avatar"
-                    style={{ width: "1rem" }}
-                  />
-                  <span> {user.displayName} </span>
-                </div>
-                <p>
-                  <strong>Q{index + 1}:</strong> {q.question}
-                </p>
-                <ul>
-                  {q.options.map((opt, idx) => (
-                    <li
-                      key={idx}
-                      style={{
-                        fontWeight: q.correctAnswer === idx ? "bold" : "normal",
-                      }}
-                    >
-                      {opt}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-    </>
+    </div>
   );
 };
 

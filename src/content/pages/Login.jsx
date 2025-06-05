@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { _useContext } from "../contextAPI/ContextProvider";
+import Button00 from "../components/buttons/Button00";
+import LoadingButton00 from "../components/buttons/LoadingButton00";
+import Input00 from "../components/inputs/Input00";
+import useLogin from "../hooks/useLogin";
 
 const Login = () => {
-  const { _setRoute, login } = _useContext();
+  const { _setRoute } = _useContext();
+  const { login, loading } = useLogin();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -37,7 +42,13 @@ const Login = () => {
         alignItems: "center",
       }}
     >
-      <h1>LOGIN</h1>
+      <h1
+        style={{
+          marginBottom: "1rem",
+        }}
+      >
+        LOGIN
+      </h1>
       <form
         onSubmit={handleLogin}
         style={{
@@ -46,8 +57,10 @@ const Login = () => {
           gap: "8px",
         }}
       >
-        <label htmlFor="email">Email</label>
-        <input
+        {/* <label htmlFor="email" style={{ marginTop: "0.5rem" }}>
+          Email
+        </label> */}
+        <Input00
           type="email"
           id="email"
           name="email"
@@ -56,9 +69,10 @@ const Login = () => {
           onChange={handleChange}
           required
         />
-
-        <label htmlFor="password">Password</label>
-        <input
+        {/* <label htmlFor="password" style={{ marginTop: "0.5rem" }}>
+          Password
+        </label> */}
+        <Input00
           type="password"
           id="password"
           name="password"
@@ -67,8 +81,15 @@ const Login = () => {
           onChange={handleChange}
           required
         />
-
-        <input type="submit" value="Login" style={{ cursor: "pointer" }} />
+        <hr style={{ width: "100%", margin: "0.5rem 0" }} />
+        <Button00
+          type="submit"
+          value="Login"
+          style={{ cursor: "pointer", background: "blue" }}
+          loading={loading}
+        >
+          Login
+        </Button00>
       </form>
       <p>
         Don't have any account?

@@ -21,14 +21,14 @@
   --shadow-inset-active: inset 0 0 5px 3px #999, inset 0 0 30px #aaa;
 
   --button-shadow-base: var(--highlight-bottom), var(--shadow-bottom),
-                        var(--shadow-top), var(--highlight-top);
+    var(--shadow-top), var(--highlight-top);
   --button-shadow-default: var(--button-shadow-base), var(--shadow-inset);
   --button-shadow-hover: var(--button-shadow-base),
-                         var(--shadow-inset-hover);
+    var(--shadow-inset-hover);
   --button-shadow-focus: var(--button-shadow-base),
-                         var(--shadow-inset-focus);
+    var(--shadow-inset-focus);
   --button-shadow-active: var(--button-shadow-base),
-                          var(--shadow-inset-active);
+    var(--shadow-inset-active);
 }
 
 .card {
@@ -109,12 +109,6 @@ button:hover:not([disabled]),
 button:hover:not([disabled])>*,
 [role="button"]:hover:not([disabled])>* {
   transform: scale(0.975);
-}
-
-button:focus:not(:active),
-[role="button"]:focus:not(:active) {
-  animation: active 0.9s alternate infinite;
-  outline: none;
 }
 
 button:active:not([disabled]),

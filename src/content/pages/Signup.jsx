@@ -1,28 +1,29 @@
 import React, { useState } from "react";
 import { _useContext } from "../contextAPI/ContextProvider";
-
+import Button00 from "../components/buttons/Button00";
+import Input00 from "../components/inputs/Input00";
+import useSignup from "../hooks/useSignup";
 const Signup = () => {
   const { _setRoute, signin } = _useContext();
-
+  const { loading, signup } = useSignup();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
-    profilePic: null,
   });
 
   function handleChange(e) {
-    const { name, value, type, files } = e.target;
+    const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: type === "file" ? files[0] : value,
+      [name]: value,
     }));
   }
 
-  async function handleSignin(e) {
+  async function handleSignup(e) {
     e.preventDefault();
-    await signin(formData);
+    await signup(formData);
   }
 
   function goToLogin() {
@@ -39,17 +40,19 @@ const Signup = () => {
         alignItems: "center",
       }}
     >
-      <h1>SIGNUP</h1>
+      <h1 style={{ marginBottom: "2rem" }}>SIGNUP</h1>
       <form
-        onSubmit={handleSignin}
+        onSubmit={handleSignup}
         style={{
           display: "flex",
           flexDirection: "column",
           gap: "8px",
         }}
       >
-        <label htmlFor="username">Username</label>
-        <input
+        {/* <label htmlFor="username" style={{ marginTop: "0.5rem" }}>
+          Username
+        </label> */}
+        <Input00
           type="text"
           id="username"
           name="username"
@@ -59,8 +62,10 @@ const Signup = () => {
           required
         />
 
-        <label htmlFor="email">Email</label>
-        <input
+        {/* <label htmlFor="email" style={{ marginTop: "0.5rem" }}>
+          Email
+        </label> */}
+        <Input00
           type="email"
           id="email"
           name="email"
@@ -70,8 +75,10 @@ const Signup = () => {
           required
         />
 
-        <label htmlFor="password">Password</label>
-        <input
+        {/* <label htmlFor="password" style={{ marginTop: "0.5rem" }}>
+          Password
+        </label> */}
+        <Input00
           type="password"
           id="password"
           name="password"
@@ -81,8 +88,10 @@ const Signup = () => {
           required
         />
 
-        <label htmlFor="confirmPassword">Confirm Password</label>
-        <input
+        {/* <label htmlFor="confirmPassword" style={{ marginTop: "0.5rem" }}>
+          Confirm Password
+        </label> */}
+        <Input00
           type="password"
           id="confirmPassword"
           name="confirmPassword"
@@ -92,17 +101,15 @@ const Signup = () => {
           required
         />
 
-        <label htmlFor="profilePic">Profile Picture (optional)</label>
-        <input
-          type="file"
-          name="profilePic"
-          id="profilePic"
-          accept="image/*"
-          onChange={handleChange}
-          style={{ cursor: "pointer" }}
-        />
+        <hr style={{ width: "100%", margin: "0.5rem 0" }} />
 
-        <input type="submit" value="Signin" style={{ cursor: "pointer" }} />
+        <Button00
+          type="submit"
+          value="Signin"
+          style={{ backgroundColor: "blue" }}
+        >
+          {loading ? "Loading..." : "Signup"}
+        </Button00>
       </form>
       <p>
         Already have an account?

@@ -1,20 +1,20 @@
 import React from "react";
-import Home from "./Home";
-import Notes from "./Notes";
+import QuestionsPage from "./QuestionsPage";
 import Profile from "./Profile";
 import Login from "./Login";
 import Signup from "./Signup";
 import ContributeQue from "./ContributeQue";
+import PromptPage from "./PromptPage";
 
 import { _useContext } from "../contextAPI/ContextProvider";
 
 const routes = {
-  Home: { component: Home },
-  Notes: { component: Notes },
+  QuestionsPage: { component: QuestionsPage },
   Profile: { component: Profile, requiresAuth: true },
   Login: { component: Login },
   Signup: { component: Signup },
   ContributeQue: { component: ContributeQue, requiresAuth: true },
+  PromptPage: { component: PromptPage, requiresAuth: true },
 };
 
 const PageRouteManager = () => {
@@ -23,12 +23,19 @@ const PageRouteManager = () => {
   const route = routes[_route];
 
   if (!route) return <div>Page Not Found</div>;
-  if (route.requiresAuth && !isAuthenticated()) {
+  if (_route == "Login" || _route == "Signup") {
+    if (isAuthenticated()) {
+      console.log("❤️");
+      _setRoute("QuestionsPage");
+    }
+  }
+  // if (route.requiresAuth && !isAuthenticated()) {
+  if (!isAuthenticated()) {
     // console.log("❤️");
     // _setRoute("Signup");
     // console.log("❤️❤️");
-
-    return <Signup />;
+    if (_route == "Signup") return <Signup />;
+    return <Login />;
   }
 
   const Component = route.component;
