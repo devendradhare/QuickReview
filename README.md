@@ -1,4 +1,6 @@
 🔍 Quick Review – Chrome Extension
+![Screenshot 2025-06-05 163234](https://github.com/user-attachments/assets/12dfcb92-4d2b-4b21-8515-90d234372039)
+
 Quick Review is a Chrome extension that enhances the YouTube learning experience by showing interactive MCQs (Multiple Choice Questions) based on the content of the video. It's designed to help students and learners test their understanding in real time.
 
 🧠 Features
